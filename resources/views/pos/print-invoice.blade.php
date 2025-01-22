@@ -1,4 +1,4 @@
-<!doctype html>
+{{-- <!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -150,4 +150,248 @@
     });
     </script>
 </body>
+</html> --}}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Invoice</title>
+
+        <!-- Font Awesome for Icons -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <style>
+            @font-face {
+                font-family: "ReceiptDemo";
+                src: url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.eot");
+                src: url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.eot?#iefix")format("embedded-opentype"),
+                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.woff2")format("woff2"),
+                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.woff")format("woff"),
+                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.ttf")format("truetype"),
+                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.svg#ReceiptDemo")format("svg");
+            }
+            body {
+                font-family: 'ReceiptDemo';
+                margin: 0;
+                padding: 0;
+                background: #f5f5f5;
+                color: #333;
+            }
+            .invoice-container {
+                width: 80%;
+                margin: 20px auto;
+                background: #fff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            .invoice-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .invoice-header h1 {
+                margin: 0;
+                font-size: 36px;
+            }
+            .invoice-header td{
+                margin: 0;
+                font-size: 24px;
+                text-align: center !important;
+            }
+            .invoice-details {
+                margin-bottom: 20px;
+            }
+            .invoice-details table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .invoice-details th, .invoice-details td {
+                text-align: left;
+                padding: 8px;
+                border-bottom: 1px solid #ddd;
+            }
+            .total-section {
+                text-align: right;
+                font-size: 18px;
+                font-weight: bold;
+                margin-top: 20px;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 12px;
+                color: #666;
+            }
+            .invoice-details table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.invoice-details th, .invoice-details td {
+    text-align: left;
+    padding: 8px;
+}
+
+.invoice-details tr {
+    border: none; /* Removes borders for all table rows */
+}
+
+.invoice-details th, .invoice-details td {
+    border-bottom: none; /* Removes borders for table cells */
+}
+.dashed-custom {
+  border: 0;
+  border-top: 3px dashed #000 !important; 
+  border-bottom: 3px dashed #000 !important; 
+  border-style: dashed;
+}
+
+.dashed-top {
+  border: 0;
+  border-top: 3px dashed #000 !important; 
+  border-style: dashed;
+}
+
+            h1, h2, h3, h4, h5, h6 {
+                padding: 10px;
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="invoice-container">
+            <!-- Invoice Header -->
+            <div><div class="invoice-header">{!! $qrCode !!}</div></div>
+            <div class="invoice-header" style="text-align: justify;">
+                
+                <p>FBR Invoice No : {{ $invoiceNo }}</p>
+                <p>- BWP - MEGA - Tradecenter -</p>
+                <p>NTN No : {{ $invoiceNo }}</p>
+                <p>Transaction No : {{ $invoiceNo }}</p>
+
+                <p>Transaction Date: {{ $transactionDate }}</p>
+                <p>User: id-{{ $customer->id }}{{$customer->name}}</p>
+                <p>POS: RBWP-POS-SAL-2-RBWP-POS-SAL-2 </p>
+            </div>
+            <div class="invoice-header dashed-custom">                
+                <h1>Original Receipt</h1>
+            </div>
+
+            <!-- Product Table -->
+            
+            <div class="invoice-details">
+                <h3>Product Description:</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Discount</th>
+                            <th>Total</th>
+                        </tr>
+                        
+                    </thead>
+                    <tbody>
+                        <tr class="invoice-header">                
+                            <td colspan="5" class="dashed-custom"><h4>Sales Items</h4></td>
+                        </tr>
+                        @foreach ($products as $key => $product)
+                        <tr>
+                            <td colspan="5" style="font-weight: bold;">{{ $product['name'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ $key + 1 }}</td>
+                            <td>{{ $product['quantity'] }}</td>
+                            <td>Rs{{ $product['price'] }}</td>
+                            <td>0.00</td>
+                            <td>Rs{{ $product['quantity'] * $product['price'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-grid dashed-top">
+                <p style="display:flex; justify-content:space-between; padding:2px;">
+                    <span>Total Items/Quantity: </span>
+                    <span>2/2.00</span>
+                </p>
+                <p style="display:flex; justify-content:space-between; padding:2px;">
+                    <span>Discount: </span>
+                    <span>Rs0.00</span>
+                </p>
+                <p style="display:flex; justify-content:space-between; padding:2px;">
+                    <span>Funding: </span>
+                    <span>Rs0.00</span>
+                </p>
+                <p style="display:flex; justify-content:space-between; padding:2px;">
+                    <span>Invoice Value: </span>
+                    <span>Rs{{$subtotal }}</span>
+                </p>
+            </div>
+
+            <div class="invoice-header dashed-custom">                
+                <h2>Sale Tax Breakup</h2>
+            </div>
+            <div class="invoice-details">
+                <h3>Product Description:</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Ecl.Amt</th>
+                            <th>GST</th>
+                            <th>Inl.Amt</th>
+                        </tr>
+                        
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>MRP</td>
+                            <td>Rs0.00</td>
+                            <td>Rs0.00</td>
+                            <td>Rs0.00</td>
+                        </tr>
+                        @foreach ($products as $key => $product)
+                        <tr>
+                            <td>Non MRP</td>
+                            <td>Rs{{ ($product['price']/5)*100 }}</td>
+                            <td>0.00</td>
+                            <td>Rs{{ $product['price'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="invoice-header dashed-custom">                
+                <h2>Payments</h2>
+            </div>
+            <!-- Total Section -->
+            <div class="total-section">
+                <p style="display:flex; justify-content:space-between; padding:2px;">
+                    <span>Charge: </span>
+                    <span>Rs{{$subtotal}}</span>
+                </p>
+                <p style="display:flex; justify-content:space-between; padding:2px;">
+                    <span>Chnage Due: </span>
+                    <span>Rs0.00</span>
+                </p>
+            </div>
+            <div class="d-flex justify-content-center">
+                <div class="barcode-container" style="display: flex;justify-content: center;">
+                    <!-- Barcode -->
+                    {!! \Milon\Barcode\Facades\DNS1DFacade::getBarcodeSVG("123456", 'UPCA', 2, 50) !!}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                For return and exchnage policy details
+            </div>
+        </div>
+    </body>
 </html>

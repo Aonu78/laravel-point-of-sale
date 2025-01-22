@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Redirect;
 use Gloudemans\Shoppingcart\Facades\Cart;
-
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Milon\Barcode\Facades\DNS1DFacade;
 class PosController extends Controller
 {
     public function index()
@@ -97,10 +98,24 @@ class PosController extends Controller
         $validatedData = $request->validate($rules);
         $customer = Customer::where('id', $validatedData['customer_id'])->first();
         $content = Cart::content();
-
+        $qrCode = QrCode::size(70)->generate('1234567');
         return view('pos.print-invoice', [
             'customer' => $customer,
-            'content' => $content
+            'content' => $content,
+
+            'transactionDate' => '2025-01-21',
+            'invoiceNo' => '1234567',
+            'customerName' => 'John Doe',
+            'customerPhone' => '+1234567890',
+            'customerAddress' => '123 Main Street, City',
+            'products' => [
+                ['name' => 'Krone Noir Body Spray', 'quantity' => 1, 'price' => 469.00],
+                ['name' => 'FBR POS Charges', 'quantity' => 1, 'price' => 1.00],
+            ],
+            'subtotal' => 470.00,
+            'vat' => 23.50,
+            'total' => 493.50,
+            'qrCode' => $qrCode
         ]);
     }
 }
