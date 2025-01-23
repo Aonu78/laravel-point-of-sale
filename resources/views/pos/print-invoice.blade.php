@@ -85,7 +85,7 @@
                                                     </td>
                                                     <td class="text-center">{{ $item->qty }}</td>
                                                     <td class="text-center">{{ $item->price }}</td>
-                                                    <td class="text-center"><b>{{ $item->subtotal }}</b></td>
+                                                    <td class="text-center"><b>{{ $item->order->sub_total }}</b></td>
                                                 </tr>
 
                                                 @endforeach
@@ -122,7 +122,7 @@
                                             </div>
                                             <div class="mb-2">
                                                 <h6>Sub Total</h6>
-                                                <p>${{ Cart::subtotal() }}</p>
+                                                <p>${{ Cart::order->sub_total() }}</p>
                                             </div>
                                             <div>
                                                 <h6>Vat (5%)</h6>
@@ -151,6 +151,8 @@
     </script>
 </body>
 </html> --}}
+{{-- {{dd($order)}} --}}
+{{-- {{dd($orderDetails)}} --}}
 <!doctype html>
 <html lang="en">
     <head>
@@ -160,25 +162,22 @@
 
         <!-- Font Awesome for Icons -->
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-
+        <link href="https://db.onlinewebfonts.com/c/30b00facfba202199ef83688fad9a939?family=Line+Printer" rel="stylesheet" type="text/css"/>
         <!-- Custom CSS -->
         <style>
-            @font-face {
-                font-family: "ReceiptDemo";
-                src: url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.eot");
-                src: url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.eot?#iefix")format("embedded-opentype"),
-                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.woff2")format("woff2"),
-                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.woff")format("woff"),
-                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.ttf")format("truetype"),
-                url("https://db.onlinewebfonts.com/t/d821dfc602894bda0db9e4f546f9d444.svg#ReceiptDemo")format("svg");
-            }
+            
             body {
-                font-family: 'ReceiptDemo';
+                font-family: 'Line Printer';
                 margin: 0;
                 padding: 0;
                 background: #f5f5f5;
                 color: #333;
             }
+            td, tr, p{
+                padding: 0;
+                margin: 0;
+            }
+            
             .invoice-container {
                 width: 80%;
                 margin: 20px auto;
@@ -209,7 +208,7 @@
             }
             .invoice-details th, .invoice-details td {
                 text-align: left;
-                padding: 8px;
+                /* padding: 8px; */
                 border-bottom: 1px solid #ddd;
             }
             .total-section {
@@ -231,7 +230,7 @@
 
 .invoice-details th, .invoice-details td {
     text-align: left;
-    padding: 8px;
+    /* padding: 8px; */
 }
 
 .invoice-details tr {
@@ -243,14 +242,14 @@
 }
 .dashed-custom {
   border: 0;
-  border-top: 3px dashed #000 !important; 
-  border-bottom: 3px dashed #000 !important; 
+  border-top: 2px dashed #000 !important; 
+  border-bottom: 2px dashed #000 !important; 
   border-style: dashed;
 }
 
 .dashed-top {
   border: 0;
-  border-top: 3px dashed #000 !important; 
+  border-top: 2px dashed #000 !important; 
   border-style: dashed;
 }
 
@@ -259,21 +258,50 @@
                 margin: 0;
             }
         </style>
+        <style>
+            .btn {
+                display: inline-block;
+                padding: 10px 20px;
+                font-size: 16px;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 5px;
+                text-align: center;
+                cursor: pointer;
+                margin: 10px 5px;
+            }
+        
+            .btn-print {
+                background-color: #007bff; /* Blue color */
+                border: 1px solid #0056b3;
+            }
+        
+            .btn-download {
+                background-color: #28a745; /* Green color */
+                border: 1px solid #1e7e34;
+            }
+        
+            .btn:hover {
+                opacity: 0.9;
+            }
+        </style>
+        
     </head>
     <body>
-        <div class="invoice-container">
+        <div class="invoice-container" id="invoice_wrapper">
             <!-- Invoice Header -->
             <div><div class="invoice-header">{!! $qrCode !!}</div></div>
             <div class="invoice-header" style="text-align: justify;">
                 
-                <p>FBR Invoice No : {{ $invoiceNo }}</p>
-                <p>- BWP - MEGA - Tradecenter -</p>
-                <p>NTN No : {{ $invoiceNo }}</p>
-                <p>Transaction No : {{ $invoiceNo }}</p>
+                <p>FBR Invoice No : {{ $order->fbr_invoice_no }}</p>
+                <p>{{$systemSetting->main_tag_line}}</p>
+                <p>NTN No : {{$systemSetting->ntn_number}}</p>
+                <p>Transaction No : {{ $order->transaction_no }}</p>
 
-                <p>Transaction Date: {{ $transactionDate }}</p>
+                <p>Transaction Date: {{ \Carbon\Carbon::parse($order->created_at)->format('M d, Y h:i A') }}</p>
+
                 <p>User: id-{{ $customer->id }}{{$customer->name}}</p>
-                <p>POS: RBWP-POS-SAL-2-RBWP-POS-SAL-2 </p>
+                <p>POS: {{$systemSetting->location_pos}}</p>
             </div>
             <div class="invoice-header dashed-custom">                
                 <h1>Original Receipt</h1>
@@ -298,16 +326,16 @@
                         <tr class="invoice-header">                
                             <td colspan="5" class="dashed-custom"><h4>Sales Items</h4></td>
                         </tr>
-                        @foreach ($products as $key => $product)
+                        @foreach ($orderDetails as $key => $product)
                         <tr>
-                            <td colspan="5" style="font-weight: bold;">{{ $product['name'] }}</td>
+                            <td colspan="5" style="font-weight: bold;">{{ $product->product->product_name }}</td>
                         </tr>
                         <tr>
                             <td>{{ $key + 1 }}</td>
-                            <td>{{ $product['quantity'] }}</td>
-                            <td>Rs{{ $product['price'] }}</td>
+                            <td>{{ $product->quantity }}</td>
+                            <td>Rs{{ number_format($product->unitcost,2)}}</td>
                             <td>0.00</td>
-                            <td>Rs{{ $product['quantity'] * $product['price'] }}</td>
+                            <td>Rs{{ number_format($product->total,2) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -317,7 +345,7 @@
             <div class="d-grid dashed-top">
                 <p style="display:flex; justify-content:space-between; padding:2px;">
                     <span>Total Items/Quantity: </span>
-                    <span>2/2.00</span>
+                    <span>{{$order->total_products}}/{{number_format($order->total_products,2)}}</span>
                 </p>
                 <p style="display:flex; justify-content:space-between; padding:2px;">
                     <span>Discount: </span>
@@ -329,7 +357,7 @@
                 </p>
                 <p style="display:flex; justify-content:space-between; padding:2px;">
                     <span>Invoice Value: </span>
-                    <span>Rs{{$subtotal }}</span>
+                    <span>Rs{{number_format($order->sub_total,2) }}</span>
                 </p>
             </div>
 
@@ -355,18 +383,17 @@
                             <td>Rs0.00</td>
                             <td>Rs0.00</td>
                         </tr>
-                        @foreach ($products as $key => $product)
+                        @foreach ($orderDetails as $key => $product)
                         <tr>
                             <td>Non MRP</td>
-                            <td>Rs{{ ($product['price']/5)*100 }}</td>
-                            <td>0.00</td>
-                            <td>Rs{{ $product['price'] }}</td>
+                            <td>Rs{{ number_format($product->unitcost,2)}}</td>
+                            <td>Rs{{ number_format((( $product->total/$product->quantity) - $product->unitcost),2) }}</td>
+                            <td>Rs{{ number_format(($product->total/$product->quantity),2)}}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-
             <div class="invoice-header dashed-custom">                
                 <h2>Payments</h2>
             </div>
@@ -374,24 +401,59 @@
             <div class="total-section">
                 <p style="display:flex; justify-content:space-between; padding:2px;">
                     <span>Charge: </span>
-                    <span>Rs{{$subtotal}}</span>
+                    <span>Rs{{number_format($order->total,2)}}</span>
                 </p>
                 <p style="display:flex; justify-content:space-between; padding:2px;">
-                    <span>Chnage Due: </span>
-                    <span>Rs0.00</span>
+                    <span>Pay: </span>
+                    <span>Rs{{number_format($order->pay,2)}}</span>
                 </p>
+                <p style="display:flex; justify-content:space-between; padding:2px;">
+                    <span>Change Due: </span>
+                    <span>Rs{{number_format($order->due,2)}}</span>
+                </p>
+
             </div>
             <div class="d-flex justify-content-center">
                 <div class="barcode-container" style="display: flex;justify-content: center;">
                     <!-- Barcode -->
-                    {!! \Milon\Barcode\Facades\DNS1DFacade::getBarcodeSVG("123456", 'UPCA', 2, 50) !!}
+                    {!! \Milon\Barcode\Facades\DNS1DFacade::getBarcodeSVG(intval($order->transaction_no), 'UPCA', 2, 50) !!}
                 </div>
             </div>
 
             <!-- Footer -->
-            <div class="footer">
-                For return and exchnage policy details
+            <div class="footer dashed-top">
+                <p>
+                    {{$systemSetting->location_pos}}
+                </p>
             </div>
         </div>
+        <div class="invoice-btn-section clearfix d-print-none" style="display: flex; justify-content: center;">
+            <a href="javascript:void(0)" class="btn btn-lg btn-print" onclick="printInvoice()">
+                Print Invoice
+            </a>            
+            <a id="invoice_download_btn" class="btn btn-lg btn-download">
+                Download Invoice
+            </a>
+        </div>
+        <script>
+            function printInvoice() {
+                const invoiceWrapper = document.getElementById('invoice_wrapper');
+                const originalContent = document.body.innerHTML;
+        
+                // Replace body content with the invoice content
+                document.body.innerHTML = invoiceWrapper.innerHTML;
+                window.print();
+        
+                // Restore original content
+                document.body.innerHTML = originalContent;
+                window.location.reload();
+            }
+        </script>
+        
+    <script src="{{ asset('assets/invoice/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/invoice/js/jspdf.min.js') }}"></script>
+    <script src="{{ asset('assets/invoice/js/html2canvas.js') }}"></script>
+    <script src="{{ asset('assets/invoice/js/app.js') }}"></script>
+
     </body>
 </html>

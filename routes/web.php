@@ -16,6 +16,7 @@ use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Dashboard\SystemSettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,6 +114,7 @@ Route::middleware(['permission:orders.menu'])->group(function () {
     Route::get('/orders/details/{order_id}', [OrderController::class, 'orderDetails'])->name('order.orderDetails');
     Route::put('/orders/update/status', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
     Route::get('/orders/invoice/download/{order_id}', [OrderController::class, 'invoiceDownload'])->name('order.invoiceDownload');
+    Route::put('/order/update-transaction', [OrderController::class, 'updateTransaction'])->name('order.updateTransaction');
 
     // Pending Due
     Route::get('/pending/due', [OrderController::class, 'pendingDue'])->name('order.pendingDue');
@@ -156,6 +158,11 @@ Route::middleware(['permission:roles.menu'])->group(function () {
     Route::get('/role/permission/{id}', [RoleController::class, 'rolePermissionEdit'])->name('rolePermission.edit');
     Route::put('/role/permission/{id}', [RoleController::class, 'rolePermissionUpdate'])->name('rolePermission.update');
     Route::delete('/role/permission/{id}', [RoleController::class, 'rolePermissionDestroy'])->name('rolePermission.destroy');
+
+    Route::get('/system-settings/edit', [SystemSettingController::class, 'edit'])->name('system.settings.edit');
+    Route::put('/system-settings/update', [SystemSettingController::class, 'update'])->name('system.settings.update');
+    
+
 });
 
 require __DIR__.'/auth.php';

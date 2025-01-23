@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Customer;
 use App\Models\OrderDetails;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,6 +15,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Redirect;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Milon\Barcode\Facades\DNS1DFacade;
 
 class OrderController extends Controller
 {
@@ -85,6 +89,10 @@ class OrderController extends Controller
             'prefix' => 'INV-'
         ]);
 
+        // Generate FBR Invoice No and Transaction No
+        $fbr_invoice_no = rand(10000, 99999).'A43FRC' . rand(10000, 99999);
+        $transaction_no = rand(1000, 9999).'RBWP' . rand(10000, 99999);
+
         $validatedData = $request->validate($rules);
         $validatedData['order_date'] = Carbon::now()->format('Y-m-d');
         $validatedData['order_status'] = 'pending';
@@ -92,6 +100,8 @@ class OrderController extends Controller
         $validatedData['sub_total'] = Cart::subtotal();
         $validatedData['vat'] = Cart::tax();
         $validatedData['invoice_no'] = $invoice_no;
+        $validatedData['fbr_invoice_no'] = $fbr_invoice_no; 
+        $validatedData['transaction_no'] = $transaction_no; 
         $validatedData['total'] = Cart::total();
         $validatedData['due'] = Cart::total() - $validatedData['pay'];
         $validatedData['created_at'] = Carbon::now();
@@ -116,7 +126,26 @@ class OrderController extends Controller
         // Delete Cart Sopping History
         Cart::destroy();
 
-        return Redirect::route('dashboard')->with('success', 'Order has been created!');
+        return redirect()->route('order.invoiceDownload', ['order_id' => $order_id])->with('success', 'Order has been created!');
+
+        // return Redirect::route('dashboard')->with('success', 'Order has been created!');
+    }
+    public function updateTransaction(Request $request)
+    {
+        $validatedData = $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'fbr_invoice_no' => 'required|string|max:255',
+            'transaction_no' => 'required|string|max:255',
+        ]);
+
+        $order = Order::findOrFail($validatedData['order_id']);
+
+        $order->update([
+            'fbr_invoice_no' => $validatedData['fbr_invoice_no'],
+            'transaction_no' => $validatedData['transaction_no'],
+        ]);
+
+        return redirect()->route('order.invoiceDownload', ['order_id' => $order->id])->with('success', 'Transaction No and FBR Invoice No updated successfully!');
     }
 
     /**
@@ -158,16 +187,23 @@ class OrderController extends Controller
 
     public function invoiceDownload(Int $order_id)
     {
+        $systemSetting = SystemSetting::where('id', 1)->first();
         $order = Order::where('id', $order_id)->first();
+        $customer = Customer::where('id', $order->customer_id)->first();
+
         $orderDetails = OrderDetails::with('product')
                         ->where('order_id', $order_id)
                         ->orderBy('id', 'DESC')
                         ->get();
-
+        
+        $qrCode = QrCode::size(70)->generate($order->invoice_no);
         // show data (only for debugging)
-        return view('orders.invoice-order', [
+        return view('pos.print-invoice', [
             'order' => $order,
+            'customer' => $customer,
             'orderDetails' => $orderDetails,
+            "qrCode" => $qrCode,
+            'systemSetting' => $systemSetting,
         ]);
     }
 

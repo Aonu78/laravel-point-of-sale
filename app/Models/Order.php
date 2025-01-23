@@ -18,6 +18,8 @@ class Order extends Model
         'sub_total',
         'vat',
         'invoice_no',
+        'fbr_invoice_no', 
+        'transaction_no', 
         'total',
         'payment_status',
         'pay',

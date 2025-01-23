@@ -226,6 +226,15 @@
                 @endif
 
                 @if (auth()->user()->can('database.menu'))
+                <li class="{{ Request::is('system.settings.edit') ? 'active' : '' }}">
+                    <a href="{{ route('system.settings.edit') }}" class="svg-icon">
+                        <i class="fa-solid fa-key"></i>
+                        <span class="ml-3">System Settings</span>
+                    </a>
+                </li>
+                @endif
+
+                @if (auth()->user()->can('database.menu'))
                 <li class="{{ Request::is('database/backup*') ? 'active' : '' }}">
                     <a href="{{ route('backup.index') }}" class="svg-icon">
                         <i class="fa-solid fa-database"></i>

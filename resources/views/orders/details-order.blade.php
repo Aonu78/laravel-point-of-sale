@@ -25,18 +25,7 @@
                     </div>
 
                     <div class="row align-items-center">
-                        <div class="form-group col-md-12">
-                            <label>Customer Name</label>
-                            <input type="text" class="form-control bg-white" value="{{ $order->customer->name }}" readonly>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Customer Email</label>
-                            <input type="text" class="form-control bg-white" value="{{ $order->customer->email }}" readonly>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Customer Phone</label>
-                            <input type="text" class="form-control bg-white" value="{{ $order->customer->phone }}" readonly>
-                        </div>
+                        
                         <div class="form-group col-md-6">
                             <label>Order Date</label>
                             <input type="text" class="form-control bg-white" value="{{ $order->order_date }}" readonly>
@@ -44,6 +33,14 @@
                         <div class="form-group col-md-6">
                             <label>Order Invoice</label>
                             <input class="form-control bg-white" id="buying_date" value="{{ $order->invoice_no }}" readonly/>
+                        </div>
+                        <div class="form-group col-md-12">
+                            <label>Customer Name</label>
+                            <input type="text" class="form-control bg-white" value="{{ $order->customer->name }}" readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Customer Phone</label>
+                            <input type="text" class="form-control bg-white" value="{{ $order->customer->phone }}" readonly>
                         </div>
                         <div class="form-group col-md-6">
                             <label>Payment Status</label>
@@ -57,8 +54,29 @@
                             <label>Due Amount</label>
                             <input type="text" class="form-control bg-white" value="{{ $order->due }}" readonly>
                         </div>
+
                     </div>
                     <!-- end: Show Data -->
+
+                    <!-- Update FBR Invoice No and Transaction No -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <form action="{{ route('order.updateTransaction') }}" method="POST" style="margin-bottom: 5px">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="order_id" value="{{ $order->id }}">
+                                <div class="form-group">
+                                    <label for="fbr_invoice_no">FBR Invoice No</label>
+                                    <input type="text" name="fbr_invoice_no" id="fbr_invoice_no" class="form-control" value="{{ $order->fbr_invoice_no }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="transaction_no">Transaction No</label>
+                                    <input type="text" name="transaction_no" id="transaction_no" class="form-control" value="{{ $order->transaction_no }}" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Transaction</button>
+                            </form>
+                        </div>
+                    </div>
 
                     @if ($order->order_status == 'pending')
                         <div class="row">

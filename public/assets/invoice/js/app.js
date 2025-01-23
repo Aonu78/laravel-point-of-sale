@@ -9,7 +9,7 @@ $(function () {
         var contentHeight = $("#invoice_wrapper").height();
         var topLeftMargin = 20;
         var pdfWidth = contentWidth + topLeftMargin * 2;
-        var pdfHeight = pdfWidth * 1.5 + topLeftMargin * 2;
+        var pdfHeight = pdfWidth + topLeftMargin * 2;
         var canvasImageWidth = contentWidth;
         var canvasImageHeight = contentHeight;
         var totalPDFPages = Math.ceil(contentHeight / pdfHeight) - 1;
