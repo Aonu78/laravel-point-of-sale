@@ -196,7 +196,7 @@ class OrderController extends Controller
                         ->orderBy('id', 'DESC')
                         ->get();
         
-        $qrCode = QrCode::size(70)->generate($order->invoice_no);
+        $qrCode = QrCode::size(70)->generate($order->fbr_invoice_no);
         // show data (only for debugging)
         return view('pos.print-invoice', [
             'order' => $order,

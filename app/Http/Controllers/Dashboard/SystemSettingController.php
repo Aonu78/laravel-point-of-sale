@@ -61,7 +61,7 @@ class SystemSettingController extends Controller
                 $envContent
             );
             file_put_contents(base_path('.env'), $updatedEnvContent);
-            Artisan::call('config:cache');
+            // Artisan::call('config:cache');
         }
         return redirect()->back()->with('success', 'System settings updated successfully!');
     }
