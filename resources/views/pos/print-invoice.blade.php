@@ -12,11 +12,12 @@
         <style>
             
             body {
-                font-family: 'Line Printer';
+                font-family: "Line Printer";
                 margin: 0;
                 padding: 0;
                 background: #f5f5f5;
-                color: #333;
+                color: #000;
+                font-weight: 500;
             }
             td, tr, p{
                 padding: 0;
@@ -24,7 +25,7 @@
             }
             
             .invoice-container {
-                width: 80%;
+                width: 340px;
                 margin: 20px auto;
                 background: #fff;
                 padding: 20px;
@@ -37,7 +38,7 @@
             }
             .invoice-header h1 {
                 margin: 0;
-                font-size: 36px;
+                font-size: 24px;
             }
             .invoice-header td{
                 margin: 0;
@@ -102,8 +103,7 @@
                 padding: 10px;
                 margin: 0;
             }
-        </style>
-        <style>
+
             .btn {
                 display: inline-block;
                 padding: 10px 20px;
@@ -129,6 +129,13 @@
             .btn:hover {
                 opacity: 0.9;
             }
+            #bars text{
+                display: none;
+            }
+            .barcode-container div{
+                position: absolute;
+                margin-bottom: -38px;
+            }
         </style>
         
     </head>
@@ -136,12 +143,12 @@
         <div class="container">
             <div class="invoice-container" id="invoice_wrapper">
                 <!-- Invoice Header -->
-                <div><div class="invoice-header">
+                <div><div class="invoice-header" style="padding: 30px;">
                 @if($systemSetting->logo)
-                    <img src="{{ asset('storage/logos/'.$systemSetting->logo) }}" alt="Logo" class="mb-3" style="max-width: 100px;">
+                    <img src="{{ asset('/logos/'.$systemSetting->logo) }}" alt="Logo" class="mb-3" style="max-width: 300px; height: 100px;">
                 @endif    
                 </div></div>
-                <div><div class="invoice-header">{!! $qrCode !!}</div></div>
+                <div><div class="invoice-header" style="padding-bottom: 30px;">{!! $qrCode !!}</div></div>
                 <div class="invoice-header" style="text-align: justify;">
                     
                     <p>FBR Invoice No : {{ $order->fbr_invoice_no }}</p>
@@ -169,6 +176,7 @@
                                 <th>Price</th>
                                 <th>Discount</th>
                                 <th>Total</th>
+                                <th></th>
                             </tr>
                             
                         </thead>
@@ -178,7 +186,7 @@
                             </tr>
                             @foreach ($orderDetails as $key => $product)
                             <tr>
-                                <td colspan="4" style="font-weight: bold;">{{ $product->product->product_name }}</td>
+                                <td colspan="3" style="font-weight: bold;">{{ $product->product->product_name }}</td>
                             </tr>
                             <tr>
                                 <td>{{ number_format($product->quantity,2) }}</td>
@@ -194,19 +202,19 @@
                 <div class="d-grid dashed-top">
                     <p style="display:flex; justify-content:space-between; padding:2px;">
                         <span>Total Items/Quantity: </span>
-                        <span>{{$order->total_products}}/{{number_format($order->total_products,2)}}</span>
+                        <span style="width: 25%">{{$order->total_products}}/{{number_format($order->total_products,2)}}</span>
                     </p>
                     <p style="display:flex; justify-content:space-between; padding:2px;">
                         <span>Discount: </span>
-                        <span>Rs0.00</span>
+                        <span style="width: 25%">Rs0.00</span>
                     </p>
                     <p style="display:flex; justify-content:space-between; padding:2px;">
                         <span>Funding: </span>
-                        <span>Rs0.00</span>
+                        <span style="width: 25%">Rs0.00</span>
                     </p>
                     <h2 style="display:flex; justify-content:space-between; padding:2px;">
                         <span>Invoice Value </span>
-                        <span>Rs{{number_format($order->sub_total,2) }}</span>
+                        <span style="width: 25%">Rs{{number_format($order->sub_total,2) }}</span>
                     </h2>
                 </div>
 
@@ -249,22 +257,25 @@
                 <div class="total-section">
                     <p style="display:flex; justify-content:space-between; padding:2px;">
                         <span>Charge: </span>
-                        <span>Rs{{number_format($order->total,2)}}</span>
+                        <span style="width: 25%;display:flex;">Rs{{number_format($order->total,2)}}</span>
                     </p>
                     <p style="display:flex; justify-content:space-between; padding:2px;">
                         <span>Pay: </span>
-                        <span>Rs{{number_format($order->pay,2)}}</span>
+                        <span style="width: 25%;display:flex;">Rs{{number_format($order->pay,2)}}</span>
                     </p>
                     <p style="display:flex; justify-content:space-between; padding:2px;">
                         <span>Change Due: </span>
-                        <span>Rs{{number_format(abs($order->due),2)}}</span>
+                        <span style="width: 25%;display:flex;">Rs{{number_format(abs($order->due),2)}}</span>
                     </p>
 
                 </div>
                 <div class="d-flex justify-content-center dashed-top pt-1">
-                    <div class="barcode-container" style="display: flex;justify-content: center;padding-top: 10px;">
+                    <div class="barcode-container" style="display: flex;padding-top: 10px;flex-wrap: wrap;align-items: center;justify-content: center;">
                         <!-- Barcode -->
-                        {!! \Milon\Barcode\Facades\DNS1DFacade::getBarcodeSVG(intval($order->transaction_no), 'UPCA', 2, 50) !!}
+                        {!! \Milon\Barcode\Facades\DNS1DFacade::getBarcodeSVG($order->transaction_no, 'C128', 2, 50) !!}
+                        <div style="font-size: 14px; font-weight: bold;">
+                            {{ implode(' ', str_split($order->transaction_no, 1)) }}
+                        </div>
                     </div>
                 </div>
 

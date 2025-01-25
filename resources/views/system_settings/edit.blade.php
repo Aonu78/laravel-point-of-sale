@@ -34,7 +34,7 @@
                         <div class="form-group">
                             <label for="logo">Logo</label>
                             @if($setting->logo)
-                                <img src="{{ asset('storage/logos/'.$setting->logo) }}" alt="Logo" class="mb-3" style="max-width: 100px;">
+                                <img src="{{ asset('/logos/'.$setting->logo) }}" alt="Logo" class="mb-3" style="max-width: 100px;">
                             @endif
                             <input type="file" name="logo" class="form-control">
                         </div>
@@ -46,7 +46,7 @@
 
                         <div class="form-group">
                             <label for="pos">POS</label>
-                            <input type="text" name="pos" class="form-control" value="{{ old('pos', $setting->pos) }}">
+                            <textarea id="editor" name="pos" class="form-control">{{ old('pos', $setting->pos) }}</textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Update Settings</button>
@@ -56,4 +56,8 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.ckeditor.com/4.20.2/standard/ckeditor.js"></script>
+<script>
+    CKEDITOR.replace('editor');
+</script>
 @endsection
